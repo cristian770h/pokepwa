@@ -6,7 +6,6 @@ pipeline {
     }
 
     environment {
-        // Asegúrate que estos IDs coinciden con los que creaste en Jenkins > Credentials
         VERCEL_TOKEN = credentials('vercel-token')
         VERCEL_ORG_ID = credentials('vercel-org-id')
         VERCEL_PROJECT_ID = credentials('vercel-project-id')

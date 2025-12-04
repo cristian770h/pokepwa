@@ -4,10 +4,7 @@ import './App.css'
 function App() {
   const [pokemons, setPokemons] = useState([]);
 // ERROR INTENCIONAL
-const x = 10;
-if(x == 10) {
-  alert("Esto es una mala práctica bloqueante"); 
-}
+
 
 
 
