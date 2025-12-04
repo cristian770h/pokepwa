@@ -51,18 +51,17 @@ pipeline {
         }
 
         stage('4. Despliegue a Producción') {
-            // Esta lógica decide si se despliega o no
             when {
                 allOf {
-                    branch 'main' // SOLO si la rama es main
-                    // Si tu rama se llama 'master', cambia 'main' por 'master' arriba
+                    branch 'main' 
+                    
                 }
             }
             steps {
                 echo "¡Estamos en la rama Main y la Calidad pasó! Desplegando..."
                 sh 'npm install -g vercel'
                 echo "Desplegando a Vercel..."
-        // Este comando es el que imprime el LINK al final
+       
         sh "vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN"
                 
                 sh """
