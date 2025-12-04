@@ -6,8 +6,10 @@ function App() {
 // ERROR INTENCIONAL
 const x = 10;
 if(x == 10) {
-  alert("Esto es una mala práctica bloqueante"); // SonarQube suele marcar alert() como vulnerabilidad/code smell
+  alert("Esto es una mala práctica bloqueante"); 
 }
+
+
 
   useEffect(() => {
     fetch('https://pokeapi.co/api/v2/pokemon?limit=30')
