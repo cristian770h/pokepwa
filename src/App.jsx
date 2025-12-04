@@ -20,6 +20,8 @@ function App() {
       return;
     }
 
+    
+
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         new Notification(`Has seleccionado a ${pokeName}`, {
