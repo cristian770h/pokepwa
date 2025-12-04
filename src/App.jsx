@@ -2,71 +2,51 @@ import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
-  const [pokemon, setPokemon] = useState(null);
+  const [pokemons, setPokemons] = useState([]);
+// ERROR INTENCIONAL
+const x = 10;
+if(x == 10) {
+  alert("Esto es una mala práctica bloqueante"); // SonarQube suele marcar alert() como vulnerabilidad/code smell
+}
 
-  // Consumir la API de Ditto al cargar
   useEffect(() => {
-    fetch('https://pokeapi.co/api/v2/pokemon/ditto')
+    fetch('https://pokeapi.co/api/v2/pokemon?limit=30')
       .then(res => res.json())
-      .then(data => setPokemon(data));
+      .then(data => {
+        
+        const promises = data.results.map(p => fetch(p.url).then(r => r.json()));
+        Promise.all(promises).then(details => setPokemons(details));
+      });
   }, []);
 
-  // Función 1: Pedir Permiso (Del PDF Page 2) [cite: 19]
-  const solicitarPermisoNotificaciones = () => {
-    if ("Notification" in window) {
-      Notification.requestPermission().then(resultado => {
-        console.log("Permiso de notificación:", resultado); // [cite: 24]
-        if (resultado === 'granted') {
-          alert("¡Permisos concedidos!");
-        }
-      });
+  
+  const handlePokemonClick = (pokeName) => {
+    if (!("Notification" in window)) {
+      alert("Tu navegador no soporta notificaciones");
+      return;
     }
-  };
 
-  // Función 2: Enviar Notificación al SW (Del PDF Page 3) [cite: 42]
-  const enviarNotificacion = async () => {
-    if ("serviceWorker" in navigator) {
-      // Esperamos a que el SW esté listo
-      const registration = await navigator.serviceWorker.ready; // [cite: 46]
-      
-      // Enviamos el mensaje 'SHOW_NOTIFICATION' [cite: 47, 48]
-      registration.active.postMessage({ 
-        type: "SHOW_NOTIFICATION" 
-      });
-    }
-  };
-
-  // Acción combinada: Consultar/Capturar (Simulación)
-  const handleSimularCaptura = () => {
-    // Aquí podrías lógica para cambiar de pokemon
-    enviarNotificacion(); // Dispara la notificación al "capturar"
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        new Notification(`Has seleccionado a ${pokeName}`, {
+          body: "¡Excelente elección de Pokémon!",
+          icon: "/pwa-192x192.png" 
+        });
+      }
+    });
   };
 
   return (
-    <div className="App">
-      <h1>PokePWA</h1>
-      
-      {/* Botón para activar permisos [cite: 26] */}
-      <button onClick={solicitarPermisoNotificaciones}>
-        Activar Notificaciones
-      </button>
-
-      <hr />
-
-      {pokemon ? (
-        <div className="card">
-          <h2>{pokemon.name}</h2>
-          <img src={pokemon.sprites.front_default} alt={pokemon.name} width="150"/>
-          
-          <br />
-          {/* Botón que simula la captura/consulta y dispara la notificación */}
-          <button onClick={handleSimularCaptura} style={{marginTop: '10px'}}>
-            ¡Capturar / Consultar!
-          </button>
-        </div>
-      ) : (
-        <p>Cargando Pokémon...</p>
-      )}
+    <div className="pokedex-container">
+      <h1>PokePWA DevOps</h1>
+      <div className="grid">
+        {pokemons.map((poke) => (
+          <div key={poke.id} className="card" onClick={() => handlePokemonClick(poke.name)}>
+            <img src={poke.sprites.front_default} alt={poke.name} />
+            <p>{poke.name}</p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

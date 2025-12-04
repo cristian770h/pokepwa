@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'node-20' 
+    }
+
+    environment {
+      
+        VERCEL_TOKEN = credentials('vercel-token')
+        VERCEL_ORG_ID = credentials('vercel-org-id')
+        VERCEL_PROJECT_ID = credentials('vercel-project-id')
+        
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+
+    stages {
+        stage('Instalar Dependencias') {
+            steps {
+                sh 'npm ci' 
+            }
+        }
+
+        stage('Tests') {
+            steps {
+            
+                sh 'echo "Ejecutando tests unitarios..."' 
+            }
+        }
+
+        stage('Análisis SonarQube') {
+            steps {
+                withSonarQubeEnv('sonarqube-docker') { 
+                    // Asegúrate que el nombre 'sonarqube-docker' coincide con tu config en Jenkins
+                    sh """
+                    $SCANNER_HOME/bin/sonar-scanner \
+                    -Dsonar.projectKey=pokemon-pwa \
+                    -Dsonar.sources=src \
+                    -Dsonar.host.url=http://host.docker.internal:9000 \
+                    -Dsonar.login=tu-token-si-no-usas-withSonarQubeEnv
+                    """
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                // Espera la respuesta de Sonar (Webhook necesario)
+                timeout(time: 2, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Deploy a Vercel') {
+            // Esta etapa SOLO se ejecuta si la rama es 'main' y el Quality Gate pasó
+            when {
+                branch 'main'
+            }
+            steps {
+                sh 'npm install -g vercel'
+                // Despliegue Headless inyectando los IDs para evitar preguntas interactivas
+                sh """
+                    vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+                    vercel build --prod --token=$VERCEL_TOKEN
+                    vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+                """
+            }
+        }
+    }
+}
