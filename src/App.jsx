@@ -3,11 +3,6 @@ import './App.css'
 
 function App() {
   const [pokemons, setPokemons] = useState([]);
-// ERROR INTENCIONAL
-
-
-
-
   useEffect(() => {
     fetch('https://pokeapi.co/api/v2/pokemon?limit=30')
       .then(res => res.json())
