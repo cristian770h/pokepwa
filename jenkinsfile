@@ -2,28 +2,29 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node-20' 
+        nodejs 'node-20' // El nombre que le pusiste en Global Tool Configuration
     }
 
     environment {
-      
+        // Inyectamos las credenciales como variables de entorno
         VERCEL_TOKEN = credentials('vercel-token')
         VERCEL_ORG_ID = credentials('vercel-org-id')
         VERCEL_PROJECT_ID = credentials('vercel-project-id')
-        
+        // Definimos Scanner Home
         SCANNER_HOME = tool 'sonar-scanner'
     }
 
     stages {
         stage('Instalar Dependencias') {
             steps {
-                sh 'npm ci' 
+                sh 'npm ci' // Más rápido y seguro que npm install para CI
             }
         }
 
         stage('Tests') {
             steps {
-            
+                // Si no tienes tests reales, esto crea un dummy pass. 
+                // Si tienes vitest, usa 'npm run test'
                 sh 'echo "Ejecutando tests unitarios..."' 
             }
         }
