@@ -12,13 +12,16 @@ function App() {
         Promise.all(promises).then(details => setPokemons(details));
       });
   }, []);
-
-  
   const handlePokemonClick = (pokeName) => {
     if (!("Notification" in window)) {
       alert("Tu navegador no soporta notificaciones");
       return;
     }
+
+    
+
+
+
 
     
 
