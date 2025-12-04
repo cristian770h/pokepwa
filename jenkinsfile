@@ -2,65 +2,65 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node-20' // El nombre que le pusiste en Global Tool Configuration
+        nodejs 'node-20' 
     }
 
     environment {
-        // Inyectamos las credenciales como variables de entorno
+        // Asegúrate que estos IDs coinciden con los que creaste en Jenkins > Credentials
         VERCEL_TOKEN = credentials('vercel-token')
         VERCEL_ORG_ID = credentials('vercel-org-id')
         VERCEL_PROJECT_ID = credentials('vercel-project-id')
-        // Definimos Scanner Home
         SCANNER_HOME = tool 'sonar-scanner'
     }
 
     stages {
-        stage('Instalar Dependencias') {
+        stage('1. Checkout y Setup') {
             steps {
-                sh 'npm ci' // Más rápido y seguro que npm install para CI
+                checkout scm
+                sh 'npm ci' 
             }
         }
 
-        stage('Tests') {
+        stage('2. Análisis de Código (SonarQube)') {
             steps {
-                // Si no tienes tests reales, esto crea un dummy pass. 
-                // Si tienes vitest, usa 'npm run test'
-                sh 'echo "Ejecutando tests unitarios..."' 
-            }
-        }
-
-        stage('Análisis SonarQube') {
-            steps {
-                withSonarQubeEnv('sonarqube-docker') { 
-                    // Asegúrate que el nombre 'sonarqube-docker' coincide con tu config en Jenkins
-                    sh """
-                    $SCANNER_HOME/bin/sonar-scanner \
-                    -Dsonar.projectKey=pokemon-pwa \
-                    -Dsonar.sources=src \
-                    -Dsonar.host.url=http://host.docker.internal:9000 \
-                    -Dsonar.login=tu-token-si-no-usas-withSonarQubeEnv
-                    """
+                script {
+                    // Paso A: Iniciar el escáner y enviarlo a SonarQube
+                    withSonarQubeEnv('sonarqube-docker') { 
+                        sh """
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectKey=pokemon-pwa \
+                        -Dsonar.sources=src \
+                        -Dsonar.host.url=http://host.docker.internal:9000 \
+                        -Dsonar.token=jenkins-token 
+                        """
+                        // NOTA: Si usaste token en la config de Jenkins, borra la linea -Dsonar.token
+                    }
                 }
             }
         }
 
-        stage('Quality Gate') {
+        stage('3. Verificación de Calidad (Quality Gate)') {
             steps {
-                // Espera la respuesta de Sonar (Webhook necesario)
+                // Paso B: PAUSA el pipeline hasta que SonarQube responda por el Webhook
                 timeout(time: 2, unit: 'MINUTES') {
+                    // abortPipeline: true hace que se ponga ROJO si falla la calidad
                     waitForQualityGate abortPipeline: true
                 }
             }
         }
 
-        stage('Deploy a Vercel') {
-            // Esta etapa SOLO se ejecuta si la rama es 'main' y el Quality Gate pasó
+        stage('4. Despliegue a Producción') {
+            // Esta lógica decide si se despliega o no
             when {
-                branch 'main'
+                allOf {
+                    branch 'main' // SOLO si la rama es main
+                    // Si tu rama se llama 'master', cambia 'main' por 'master' arriba
+                }
             }
             steps {
+                echo "¡Estamos en la rama Main y la Calidad pasó! Desplegando..."
                 sh 'npm install -g vercel'
-                // Despliegue Headless inyectando los IDs para evitar preguntas interactivas
+                // Despliegue Headless con tus credenciales
                 sh """
                     vercel pull --yes --environment=production --token=$VERCEL_TOKEN
                     vercel build --prod --token=$VERCEL_TOKEN
