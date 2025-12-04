@@ -1,6 +1,8 @@
 pipeline {
     agent any
 
+
+
     tools {
         nodejs 'node-20' 
     }
@@ -59,7 +61,10 @@ pipeline {
             steps {
                 echo "¡Estamos en la rama Main y la Calidad pasó! Desplegando..."
                 sh 'npm install -g vercel'
-                // Despliegue Headless con tus credenciales
+                echo "Desplegando a Vercel..."
+        // Este comando es el que imprime el LINK al final
+        sh "vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN"
+                
                 sh """
                     vercel pull --yes --environment=production --token=$VERCEL_TOKEN
                     vercel build --prod --token=$VERCEL_TOKEN
