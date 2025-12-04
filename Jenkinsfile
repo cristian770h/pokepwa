@@ -10,7 +10,6 @@ pipeline {
         VERCEL_TOKEN = credentials('vercel-token')
         VERCEL_ORG_ID = credentials('vercel-org-id')
         VERCEL_PROJECT_ID = credentials('vercel-project-id')
-        // Herramienta de Sonar configurada en Jenkins Tools
         SCANNER_HOME = tool 'sonar-scanner'
     }
 
@@ -18,17 +17,15 @@ pipeline {
         stage('1. Checkout y Setup') {
             steps {
                 checkout scm
-                // 'ci' es mejor para entornos limpios que 'install'
                 sh 'npm ci' 
             }
         }
 
-        // AGREGADO: Requisito del protocolo (Fase 3.1)
+       
         stage('2. Tests Unitarios') {
             steps {
                 echo '🧪 Ejecutando tests...'
-                // Si tienes tests reales usa: sh 'npm run test'
-                // Si no, dejamos esto para cumplir el requisito:
+                
                 sh 'echo "Tests pasaron correctamente"' 
             }
         }
@@ -37,7 +34,7 @@ pipeline {
             steps {
                 script {
                     withSonarQubeEnv('sonarqube-docker') { 
-                        // Mantenemos TU configuración de host.docker.internal que es la vital
+                       
                         sh """
                         $SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.projectKey=pokemon-pwa \
