@@ -40,6 +40,7 @@ pipeline {
                         -Dsonar.projectKey=pokemon-pwa \
                         -Dsonar.sources=src \
                         -Dsonar.host.url=http://host.docker.internal:9000 \
+                        -Dsonar.token=$TOKEN_REAL_SONAR
                         -Dsonar.token=jenkins-token 
                         """
                     }
