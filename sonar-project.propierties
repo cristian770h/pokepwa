@@ -1,4 +1,4 @@
-sonar.projectKey=pokemon-pwa
+sonar.projectKey=PokePWA
 sonar.sources=src
 sonar.exclusions=**/node_modules/**,**/*.spec.ts,dist/**
 sonar.javascript.lcov.reportPaths=coverage/lcov.info

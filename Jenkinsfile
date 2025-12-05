@@ -71,7 +71,17 @@ pipeline {
             }
             steps {
                 echo "🚀 Iniciando despliegue Headless a Vercel..."
-                sh 'npm install -g vercel'
+                sh 'npm install -g vercel'node {
+  stage('SCM') {
+    checkout scm
+  }
+  stage('SonarQube Analysis') {
+    def scannerHome = tool 'SonarScanner';
+    withSonarQubeEnv() {
+      sh "${scannerHome}/bin/sonar-scanner"
+    }
+  }
+}
                 
                 // CORREGIDO: Un solo bloque lógico ordenado
                 sh """
