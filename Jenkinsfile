@@ -33,13 +33,13 @@ pipeline {
        stage('3. Análisis de Código (SonarQube)') {
             steps {
                 script {
-                    // TRUCO: Buscamos la ruta real del Node.js de Jenkins
+                    // Detectamos la ruta del nuevo Node 20
                     def nodePath = sh(script: "which node", returnStdout: true).trim()
                     
                     withCredentials([string(credentialsId: 'sonar-token', variable: 'TOKEN_REAL_SONAR')]) {
                         withSonarQubeEnv('sonarqube-docker') { 
                             sh """
-                            # Le damos un poco más de memoria al proceso Java
+                            # Memoria estándar para Node 20
                             export SONAR_SCANNER_OPTS="-Xmx1024m"
                             
                             $SCANNER_HOME/bin/sonar-scanner \
@@ -47,10 +47,9 @@ pipeline {
                             -Dsonar.sources=src \
                             -Dsonar.host.url=http://host.docker.internal:9000 \
                             -Dsonar.token=\$TOKEN_REAL_SONAR \
-                            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.js \
+                            -Dsonar.exclusions=**/node_modules/**,**/dist/** \
                             -Dsonar.nodejs.executable=${nodePath}
                             """
-                            
                         }
                     }
                 }

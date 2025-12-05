@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-
 function App() {
   const [pokemons, setPokemons] = useState([]);
   useEffect(() => {
@@ -17,14 +16,6 @@ function App() {
       alert("Tu navegador no soporta notificaciones");
       return;
     }
-
-    
-
-
-
-
-    
-
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
         new Notification(`Has seleccionado a ${pokeName}`, {
