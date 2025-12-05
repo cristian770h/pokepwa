@@ -46,12 +46,11 @@ pipeline {
                             -Dsonar.token=\$TOKEN_REAL_SONAR \
                             -Dsonar.javascript.node.maxspace=1024 
                             """
-                            # La linea de arriba (-Dsonar.javascript.node.maxspace=1024) es la CLAVE
                         }
                     }
 
 
-                    
+
                 }
             }
         }
