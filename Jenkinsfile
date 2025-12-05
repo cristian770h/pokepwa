@@ -33,16 +33,19 @@ pipeline {
         stage('3. Análisis de Código (SonarQube)') {
             steps {
                 script {
-                    withSonarQubeEnv('sonarqube-docker') { 
-                       
-                        sh """
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectKey=pokemon-pwa \
-                        -Dsonar.sources=src \
-                        -Dsonar.host.url=http://host.docker.internal:9000 \
-                        -Dsonar.token=$TOKEN_REAL_SONAR
-                        -Dsonar.token=jenkins-token 
-                        """
+                    // Asegúrate que 'sonar-token' sea el ID correcto en tus Credenciales
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'TOKEN_REAL_SONAR')]) {
+                        
+                        withSonarQubeEnv('sonarqube-docker') { 
+                            sh """
+                            $SCANNER_HOME/bin/sonar-scanner \
+                            -Dsonar.projectKey=pokemon-pwa \
+                            -Dsonar.sources=src \
+                            -Dsonar.host.url=http://host.docker.internal:9000 \
+                            -Dsonar.token=\$TOKEN_REAL_SONAR 
+                            """
+                            // ARRIBA: Fíjate en la barra invertida \$TOKEN_REAL_SONAR
+                        }
                     }
                 }
             }
