@@ -30,13 +30,16 @@ pipeline {
             }
         }
 
-        stage('3. Análisis de Código (SonarQube)') {
+       stage('3. Análisis de Código (SonarQube)') {
             steps {
                 script {
+                    // TRUCO: Buscamos la ruta real del Node.js de Jenkins
+                    def nodePath = sh(script: "which node", returnStdout: true).trim()
+                    
                     withCredentials([string(credentialsId: 'sonar-token', variable: 'TOKEN_REAL_SONAR')]) {
                         withSonarQubeEnv('sonarqube-docker') { 
                             sh """
-                            # Opción para limitar la memoria de Java del escáner
+                            # Le damos un poco más de memoria al proceso Java
                             export SONAR_SCANNER_OPTS="-Xmx1024m"
                             
                             $SCANNER_HOME/bin/sonar-scanner \
@@ -44,13 +47,12 @@ pipeline {
                             -Dsonar.sources=src \
                             -Dsonar.host.url=http://host.docker.internal:9000 \
                             -Dsonar.token=\$TOKEN_REAL_SONAR \
-                            -Dsonar.javascript.node.maxspace=1024 
+                            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.spec.js \
+                            -Dsonar.nodejs.executable=${nodePath}
                             """
+                            
                         }
                     }
-
-
-
                 }
             }
         }
