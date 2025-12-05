@@ -33,18 +33,20 @@ pipeline {
         stage('3. Análisis de Código (SonarQube)') {
             steps {
                 script {
-                    // Asegúrate que 'sonar-token' sea el ID correcto en tus Credenciales
                     withCredentials([string(credentialsId: 'sonar-token', variable: 'TOKEN_REAL_SONAR')]) {
-                        
                         withSonarQubeEnv('sonarqube-docker') { 
                             sh """
+                            # Opción para limitar la memoria de Java del escáner
+                            export SONAR_SCANNER_OPTS="-Xmx1024m"
+                            
                             $SCANNER_HOME/bin/sonar-scanner \
                             -Dsonar.projectKey=pokemon-pwa \
                             -Dsonar.sources=src \
                             -Dsonar.host.url=http://host.docker.internal:9000 \
-                            -Dsonar.token=\$TOKEN_REAL_SONAR 
+                            -Dsonar.token=\$TOKEN_REAL_SONAR \
+                            -Dsonar.javascript.node.maxspace=1024 
                             """
-                            // ARRIBA: Fíjate en la barra invertida \$TOKEN_REAL_SONAR
+                            # La linea de arriba (-Dsonar.javascript.node.maxspace=1024) es la CLAVE
                         }
                     }
                 }
